@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MMLAB Scanner Bridge</title>
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- ─── Header ─── -->
+  <header>
+    <div class="brand">
+      <div class="logo-badge">
+        <img src="/icon.png" alt="MMLAB" style="width: 42px; height: 42px; border-radius: 10px; box-shadow: 0 4px 12px rgba(149, 0, 0, 0.35); display: block;">
+      </div>
+      <div>
+        <div class="brand-title">MMLAB Scanner Bridge</div>
+        <div class="brand-subtitle" data-i18n="brandSubtitle">სკანერის მართვის ლოკალური ცენტრი</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="bridge-badge" id="bridgeStatusBadge">
+        <span class="dot"></span>
+        <span>127.0.0.1:58260</span>
+      </div>
+
+      <!-- Language Toggle -->
+      <button class="btn-lang" id="btnLangToggle" title="Language / ენა">
+        <span id="langFlagWrap"></span>
+        <span id="langCode">GE</span>
+      </button>
+
+      <button class="btn-icon" id="btnRefresh" title="განახლება">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+        </svg>
+      </button>
+      <button class="btn-icon" id="btnThemeToggle" title="თემის შეცვლა">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── Main Content ─── -->
+  <main>
+    <!-- Left Column: Controls & Preview -->
+    <div class="col">
+      <!-- Device Status Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            <span data-i18n="cardStatusTitle">მოწყობილობის ლაივ სტატუსი</span>
+          </div>
+          <button class="btn btn-default" id="btnPing" style="padding: 5px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span data-i18n="btnPing">პინგი / შემოწმება</span>
+          </button>
+        </div>
+
+        <div class="status-hero">
+          <div class="status-indicator online" id="statusIndicator">
+            <span id="statusIcon" style="display: flex; align-items: center; justify-content: center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </span>
+          </div>
+          <div class="status-details">
+            <div class="status-main-label" id="statusMainText">სკანერი მზადაა (Idle)</div>
+            <div class="status-sub-label" id="statusSubText">მოწყობილობა პასუხობს შეუფერხებლად</div>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="info-box-label" data-i18n="labelDevice">მოწყობილობა</div>
+            <div class="info-box-val" id="infoDeviceName">HP LaserJet Pro MFP 4103</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label" data-i18n="labelIpPort">ქსელური IP & პორტი</div>
+            <div class="info-box-val" id="infoDeviceIp">192.168.3.133 : 80</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label" data-i18n="labelLatency">პასუხის სიჩქარე (Latency)</div>
+            <div class="info-box-val" id="infoLatency">~2 ms</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label" data-i18n="labelAdf">მიმწოდებელი (ADF)</div>
+            <div class="info-box-val" id="infoAdf" data-i18n="adfEmpty">ცარიელია</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Scan Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span data-i18n="cardScanTitle">სატესტო სკანირება & პრევიუ</span>
+          </div>
+        </div>
+
+        <div id="scanControlsForm" style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" data-i18n="labelScanSource">სკანირების წყარო:</label>
+            <div class="options-row">
+              <div class="radio-pill active" data-source="Platen" id="srcPlaten" data-i18n="srcPlaten">მინა (Flatbed)</div>
+              <div class="radio-pill" data-source="Feeder" id="srcFeeder" data-i18n="srcFeeder">მიმწოდებელი (ADF)</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" data-i18n="labelDpi">გაფართოება (DPI):</label>
+              <select class="form-input" id="scanResolution">
+                <option value="150" data-i18n="dpi150">150 DPI — სწრაფი</option>
+                <option value="300" selected data-i18n="dpi300">300 DPI — სტანდარტული (რეკომენდებული)</option>
+                <option value="600" data-i18n="dpi600">600 DPI — მაღალი ხარისხი</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="padding-top: 18px;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="scanDuplex" disabled>
+                <span data-i18n="labelDuplex">ორმხრივი (Duplex)</span>
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-large btn-block" id="btnStartScan">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span data-i18n="btnStartScan">დოკუმენტის სკანირების დაწყება</span>
+          </button>
+        </div>
+
+        <!-- Scanning In-Progress State -->
+        <div class="scan-progress-box" id="scanProgressBox">
+          <div class="spinner"></div>
+          <div class="progress-title" data-i18n="scanProgressTitle">მიმდინარეობს სკანირება...</div>
+          <div class="progress-sub" id="scanProgressMsg" data-i18n="scanProgressMsg">
+            მოთხოვნა გაგზავნილია პრინტერზე. გთხოვთ დაელოდოთ დოკუმენტის გატარებას.
+          </div>
+        </div>
+
+        <!-- Scanned PDF Preview State -->
+        <div class="preview-box" id="previewBox">
+          <div class="preview-header">
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span data-i18n="previewTitle">დასკანირებული დოკუმენტი (PDF)</span>
+            </span>
+            <button class="btn btn-default" id="btnDownloadPdf" style="padding: 4px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span data-i18n="btnDownloadPdf">კომპიუტერში შენახვა</span>
+            </button>
+          </div>
+          <iframe class="pdf-frame" id="pdfFrame"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Settings & Live Activity Logs -->
+    <div class="col">
+      <!-- Settings Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span data-i18n="cardSettingsTitle">პრინტერის პარამეტრები</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- mDNS Discover Button & Dropdown -->
+          <div style="display: flex; gap: 8px; align-items: flex-end;">
+            <div style="flex: 1;">
+              <label class="form-label" data-i18n="labelPrinterIp">პრინტერის IP მისამართი:</label>
+              <input type="text" class="form-input" id="cfgIp" placeholder="192.168.3.133">
+            </div>
+            <button class="btn btn-default" id="btnDiscover" type="button" style="padding: 9px 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;" title="სკანერების ძებნა ქსელში (mDNS)">
+              <svg id="discoverIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span id="discoverBtnText" data-i18n="btnDiscover">ძებნა (mDNS)</span>
+            </button>
+          </div>
+
+          <!-- Discovered Scanners Dropdown (Hidden until found) -->
+          <div class="form-group" id="discoveredGroup" style="display: none;">
+            <label class="form-label" style="color: var(--primary); font-weight: 600;" data-i18n="labelDiscovered">ქსელში ნაპოვნი სკანერები:</label>
+            <select class="form-input" id="discoveredSelect">
+              <option value="" disabled selected data-i18n="selectDiscovered">აირჩიეთ სკანერი სიიდან...</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+            <div class="form-group">
+              <label class="form-label" data-i18n="labelPort">პორტი:</label>
+              <input type="number" class="form-input" id="cfgPort" value="80">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="labelModel">პრინტერის მოდელი:</label>
+              <input type="text" class="form-input" id="cfgName" placeholder="HP LaserJet MFP 4103">
+            </div>
+          </div>
+
+          <!-- Security Token (api_sec_print) -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label class="form-label" style="display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span data-i18n="labelSecToken">თავდაცვითი კოდი (api_sec_print):</span>
+              </label>
+              <button type="button" id="btnGenSecToken" class="btn btn-default" style="padding: 2px 8px; font-size: 11px;" title="ახალი კოდის გენერირება" data-i18n="btnGenToken">
+                გენერირება
+              </button>
+            </div>
+            <input type="text" class="form-input" id="cfgSecToken" placeholder="sec_prn_x9k2..." autocomplete="off">
+            <span class="info-box-label" style="font-size: 11px; margin-top: 4px; display: block;" data-i18n="hintSecToken">თუ მითითებულია, ვებ-აპლიკაციამ Header-ით უნდა გამოგზავნოს: api_sec_print</span>
+          </div>
+
+          <button class="btn btn-primary" id="btnSaveConfig" style="margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span data-i18n="btnSaveConfig">პარამეტრების შენახვა</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Activity Logs Card -->
+      <div class="card" style="flex: 1;">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            <span data-i18n="cardLogsTitle">აქტივობის ჟურნალი (Live Logs)</span>
+          </div>
+          <button class="btn btn-default" id="btnClearLogs" style="padding: 3px 8px; font-size: 11px;" data-i18n="btnClearLogs">
+            გასუფთავება
+          </button>
+        </div>
+
+        <div class="log-stream" id="logStream">
+          <!-- Logs appended via JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─── Footer ─── -->
+  <footer>
+    <span>Author: <a href="https://github.com/e404r" id="authorLink" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline; font-weight: 600; cursor: pointer;">e404r</a></span>
+    <span data-i18n="footerPortVer">პორტი: <strong>58260</strong> • ვერსია: <strong>1.0.0</strong></span>
+  </footer>
+
+  <script>
+    // ─── Theme Management ───
+    const themeBtn = document.getElementById('btnThemeToggle');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let currentTheme = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    themeBtn.addEventListener('click', () => {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('theme', currentTheme);
+    });
+
+    // ─── SVG Vectors for UI ───
+    const svgFlagGE = `
+      <svg class="flag-svg" viewBox="0 0 30 20">
+        <rect width="30" height="20" fill="#fff"/>
+        <rect x="12" width="6" height="20" fill="#cc0000"/>
+        <rect y="7" width="30" height="6" fill="#cc0000"/>
+        <g fill="#cc0000">
+          <rect x="4.5" y="2.5" width="3" height="1"/><rect x="5.5" y="1.5" width="1" height="3"/>
+          <rect x="22.5" y="2.5" width="3" height="1"/><rect x="23.5" y="1.5" width="1" height="3"/>
+          <rect x="4.5" y="16.5" width="3" height="1"/><rect x="5.5" y="15.5" width="1" height="3"/>
+          <rect x="22.5" y="16.5" width="3" height="1"/><rect x="23.5" y="15.5" width="1" height="3"/>
+        </g>
+      </svg>
+    `;
+
+    const svgFlagUS = `
+      <svg class="flag-svg" viewBox="0 0 30 20">
+        <rect width="30" height="20" fill="#b22234"/>
+        <rect y="1.54" width="30" height="1.54" fill="#fff"/>
+        <rect y="4.62" width="30" height="1.54" fill="#fff"/>
+        <rect y="7.7" width="30" height="1.54" fill="#fff"/>
+        <rect y="10.78" width="30" height="1.54" fill="#fff"/>
+        <rect y="13.86" width="30" height="1.54" fill="#fff"/>
+        <rect y="16.94" width="30" height="1.54" fill="#fff"/>
+        <rect width="12" height="10.78" fill="#3c3b6e"/>
+        <circle cx="6" cy="5.39" r="2.2" fill="#fff"/>
+      </svg>
+    `;
+
+    const svgIconCheck = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    const svgIconCross = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
+    // ─── Bilingual Dictionary ───
+    const i18n = {
+      ka: {
+        brandSubtitle: "სკანერის მართვის ლოკალური ცენტრი",
+        cardStatusTitle: "მოწყობილობის ლაივ სტატუსი",
+        btnPing: "პინგი / შემოწმება",
+        statusReady: "სკანერი მზადაა",
+        statusVerified: "კავშირი დადასტურებულია",
+        statusOffline: "მოწყობილობა მიუწვდომელია",
+        statusOfflineSub: "ტაიმაუტი ან ქსელი გათიშულია",
+        statusConnError: "კავშირის შეცდომა",
+        labelDevice: "მოწყობილობა",
+        labelIpPort: "ქსელური IP & პორტი",
+        labelLatency: "პასუხის სიჩქარე (Latency)",
+        labelAdf: "მიმწოდებელი (ADF)",
+        adfEmpty: "ცარიელია",
+        adfLoaded: "დოკუმენტი დევს",
+        cardScanTitle: "სატესტო სკანირება & პრევიუ",
+        labelScanSource: "სკანირების წყარო:",
+        srcPlaten: "მინა (Flatbed)",
+        srcFeeder: "მიმწოდებელი (ADF)",
+        labelDpi: "გაფართოება (DPI):",
+        dpi150: "150 DPI — სწრაფი",
+        dpi300: "300 DPI — სტანდარტული (რეკომენდებული)",
+        dpi600: "600 DPI — მაღალი ხარისხი",
+        labelDuplex: "ორმხრივი (Duplex)",
+        btnStartScan: "დოკუმენტის სკანირების დაწყება",
+        scanProgressTitle: "მიმდინარეობს სკანირება...",
+        scanProgressMsg: "მოთხოვნა გაგზავნილია პრინტერზე. გთხოვთ დაელოდოთ დოკუმენტის გატარებას.",
+        previewTitle: "დასკანირებული დოკუმენტი (PDF)",
+        btnDownloadPdf: "კომპიუტერში შენახვა",
+        cardSettingsTitle: "პრინტერის პარამეტრები",
+        labelPrinterIp: "პრინტერის IP მისამართი:",
+        placeholderIp: "მაგ. 192.168.3.133",
+        labelPort: "პორტი:",
+        labelModel: "პრინტერის მოდელი:",
+        btnSaveConfig: "პარამეტრების შენახვა",
+        cardLogsTitle: "აქტივობის ჟურნალი (Live Logs)",
+        btnClearLogs: "გასუფთავება",
+        btnDiscover: "ძებნა (mDNS)",
+        labelDiscovered: "ქსელში ნაპოვნი სკანერები:",
+        selectDiscovered: "აირჩიეთ სკანერი სიიდან...",
+        labelSecToken: "თავდაცვითი კოდი (api_sec_print):",
+        btnGenToken: "გენერირება",
+        hintSecToken: "თუ მითითებულია, ვებ-აპლიკაციამ Header-ით უნდა გამოგზავნოს: api_sec_print",
+        footerPortVer: "პორტი: <strong>58260</strong> • ვერსია: <strong>1.0.0</strong>",
+        enterIpAlert: "გთხოვთ მიუთითოთ IP მისამართი",
+        settingsSaved: "პარამეტრები წარმატებით შეინახა (scanner_config.json)",
+        settingsSaveErr: "პარამეტრების შენახვა ვერ მოხერხდა",
+        scanComplete: "სკანირება წარმატებით დასრულდა! PDF ზომა:",
+        docDownloaded: "დოკუმენტი ჩამოიტვირთა კომპიუტერში",
+        logsCleared: "ჟურნალი გასუფთავდა",
+        sysReady: "სისტემა გაშვებულია პორტზე 58260"
+      },
+      en: {
+        brandSubtitle: "Local Scanner Control Center",
+        cardStatusTitle: "Device Live Status",
+        btnPing: "Ping / Check",
+        statusReady: "Scanner Ready",
+        statusVerified: "Connection Verified",
+        statusOffline: "Device Offline / Unreachable",
+        statusOfflineSub: "Connection timed out or network disconnected",
+        statusConnError: "Connection Error",
+        labelDevice: "Device",
+        labelIpPort: "Network IP & Port",
+        labelLatency: "Response Latency",
+        labelAdf: "Document Feeder (ADF)",
+        adfEmpty: "Empty",
+        adfLoaded: "Document Loaded",
+        cardScanTitle: "Test Scan & Preview",
+        labelScanSource: "Scan Source:",
+        srcPlaten: "Flatbed Glass",
+        srcFeeder: "Feeder (ADF)",
+        labelDpi: "Resolution (DPI):",
+        dpi150: "150 DPI — Fast",
+        dpi300: "300 DPI — Standard (Recommended)",
+        dpi600: "600 DPI — High Quality",
+        labelDuplex: "2-Sided (Duplex)",
+        btnStartScan: "Start Document Scan",
+        scanProgressTitle: "Scanning in progress...",
+        scanProgressMsg: "Request sent to printer. Please wait for document to feed.",
+        previewTitle: "Scanned Document (PDF)",
+        btnDownloadPdf: "Save to Computer",
+        cardSettingsTitle: "Printer Settings",
+        labelPrinterIp: "Printer IP Address:",
+        placeholderIp: "e.g. 192.168.3.133",
+        labelPort: "Port:",
+        labelModel: "Printer Model:",
+        btnSaveConfig: "Save Settings",
+        cardLogsTitle: "Live Activity Logs",
+        btnClearLogs: "Clear",
+        btnDiscover: "Discover (mDNS)",
+        labelDiscovered: "Discovered Network Scanners:",
+        selectDiscovered: "Select a scanner from list...",
+        labelSecToken: "Security Token (api_sec_print):",
+        btnGenToken: "Generate",
+        hintSecToken: "When set, web apps must provide header: api_sec_print",
+        footerPortVer: "Port: <strong>58260</strong> • Version: <strong>1.0.0</strong>",
+        enterIpAlert: "Please enter an IP address",
+        settingsSaved: "Settings saved successfully (scanner_config.json)",
+        settingsSaveErr: "Failed to save settings",
+        scanComplete: "Scan completed successfully! PDF Size:",
+        docDownloaded: "Document saved to computer",
+        logsCleared: "Logs cleared",
+        sysReady: "System listening on port 58260"
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().startsWith('ka') ? 'ka' : 'en');
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      document.documentElement.lang = lang;
+
+      const flagWrap = document.getElementById('langFlagWrap');
+      const codeEl = document.getElementById('langCode');
+      if (lang === 'ka') {
+        flagWrap.innerHTML = svgFlagGE;
+        codeEl.textContent = 'GE';
+      } else {
+        flagWrap.innerHTML = svgFlagUS;
+        codeEl.textContent = 'EN';
+      }
+
+      // Update static data-i18n elements
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[lang][key]) {
+          el.innerHTML = i18n[lang][key];
+        }
+      });
+
+      // Update placeholders
+      const ipInput = document.getElementById('cfgIp');
+      if (ipInput) ipInput.placeholder = i18n[lang].placeholderIp;
+    }
+
+    document.getElementById('btnLangToggle').addEventListener('click', () => {
+      setLanguage(currentLang === 'ka' ? 'en' : 'ka');
+      checkStatus();
+    });
+
+    // ─── State & Logging ───
+    let currentConfig = {
+      printer_ip: '192.168.3.133',
+      printer_port: 80,
+      printer_name: 'HP LaserJet Pro MFP 4103'
+    };
+    let currentPdfBlob = null;
+    let selectedSource = 'Platen';
+
+    function addLog(text, type = 'info') {
+      const logStream = document.getElementById('logStream');
+      const timeStr = new Date().toLocaleTimeString(currentLang === 'ka' ? 'ka-GE' : 'en-US', { hour12: false });
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.innerHTML = `<span class="log-time">[${timeStr}]</span><span class="log-text">${text}</span>`;
+      logStream.prepend(entry);
+    }
+
+    // ─── Fetch Config ───
+    async function loadConfig() {
+      try {
+        const res = await fetch('/config');
+        if (res.ok) {
+          currentConfig = await res.json();
+          if (!localStorage.getItem('lang') && (currentConfig.language === 'ka' || currentConfig.language === 'en')) {
+            setLanguage(currentConfig.language);
+          }
+          document.getElementById('cfgIp').value = currentConfig.printer_ip;
+          document.getElementById('cfgPort').value = currentConfig.printer_port;
+          document.getElementById('cfgName').value = currentConfig.printer_name;
+          document.getElementById('cfgSecToken').value = currentConfig.api_sec_print || '';
+          document.getElementById('infoDeviceName').textContent = currentConfig.printer_name;
+          document.getElementById('infoDeviceIp').textContent = `${currentConfig.printer_ip} : ${currentConfig.printer_port}`;
+          addLog(`${currentLang === 'ka' ? 'კონფიგურაცია ჩაიტვირთა' : 'Config loaded'}: ${currentConfig.printer_ip}`, 'info');
+        }
+      } catch (e) {
+        addLog(`${currentLang === 'ka' ? 'კონფიგურაციის შეცდომა' : 'Config error'}: ${e.message}`, 'error');
+      }
+    }
+
+    // ─── Save Config ───
+    document.getElementById('btnSaveConfig').addEventListener('click', async () => {
+      const ip = document.getElementById('cfgIp').value.trim();
+      const port = parseInt(document.getElementById('cfgPort').value, 10) || 80;
+      const name = document.getElementById('cfgName').value.trim() || `Scanner (${ip})`;
+      const secToken = document.getElementById('cfgSecToken').value.trim() || null;
+
+      if (!ip) {
+        alert(i18n[currentLang].enterIpAlert);
+        return;
+      }
+
+      try {
+        const res = await fetch('/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            printer_ip: ip,
+            printer_port: port,
+            printer_name: name,
+            api_sec_print: secToken
+          })
+        });
+
+        if (res.ok) {
+          currentConfig = await res.json();
+          document.getElementById('infoDeviceName').textContent = currentConfig.printer_name;
+          document.getElementById('infoDeviceIp').textContent = `${currentConfig.printer_ip} : ${currentConfig.printer_port}`;
+          addLog(i18n[currentLang].settingsSaved, 'success');
+          checkStatus();
+        } else {
+          addLog(i18n[currentLang].settingsSaveErr, 'error');
+        }
+      } catch (e) {
+        addLog(`Error: ${e.message}`, 'error');
+      }
+    });
+
+    // ─── mDNS Scanner Discovery ───
+    document.getElementById('btnDiscover').addEventListener('click', async () => {
+      const btn = document.getElementById('btnDiscover');
+      const text = document.getElementById('discoverBtnText');
+      const group = document.getElementById('discoveredGroup');
+      const select = document.getElementById('discoveredSelect');
+
+      btn.disabled = true;
+      text.textContent = currentLang === 'ka' ? 'იძებნება...' : 'Searching...';
+      addLog(currentLang === 'ka' ? 'მიმდინარეობს ქსელში სკანერების ძებნა (mDNS)...' : 'Searching for scanners via mDNS...', 'info');
+
+      try {
+        const res = await fetch('/discover?timeout=2');
+        if (res.ok) {
+          const scanners = await res.json();
+          if (scanners.length === 0) {
+            addLog(currentLang === 'ka' ? 'ქსელში სკანერი ვერ მოიძებნა (შეიყვანეთ IP ხელით)' : 'No scanners found on local network', 'warn');
+          } else {
+            addLog(`${currentLang === 'ka' ? 'ნაპოვნია' : 'Found'} ${scanners.length} ${currentLang === 'ka' ? 'მოწყობილობა' : 'scanner(s)'}!`, 'success');
+            select.innerHTML = `<option value="" disabled selected>${currentLang === 'ka' ? 'აირჩიეთ სკანერი სიიდან...' : 'Select a scanner...'}</option>`;
+            scanners.forEach(s => {
+              const opt = document.createElement('option');
+              opt.value = JSON.stringify(s);
+              opt.textContent = `${s.model || s.name} (${s.ip}:${s.port})`;
+              select.appendChild(opt);
+            });
+            group.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        addLog(`Discovery error: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        text.textContent = i18n[currentLang].btnDiscover;
+      }
+    });
+
+    document.getElementById('discoveredSelect').addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      try {
+        const s = JSON.parse(e.target.value);
+        document.getElementById('cfgIp').value = s.ip;
+        document.getElementById('cfgPort').value = s.port;
+        document.getElementById('cfgName').value = s.model || s.name;
+        addLog(`${currentLang === 'ka' ? 'არჩეულია' : 'Selected'}: ${s.model} (${s.ip})`, 'info');
+      } catch {}
+    });
+
+    // ─── Generate Security Token ───
+    document.getElementById('btnGenSecToken').addEventListener('click', () => {
+      const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+      let token = 'sec_prn_';
+      for (let i = 0; i < 16; i++) {
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('cfgSecToken').value = token;
+      addLog(currentLang === 'ka' ? 'დაგენერირდა ახალი api_sec_print კოდი' : 'Generated new api_sec_print token', 'info');
+    });
+
+    // ─── Status Check (Ping) ───
+    async function checkStatus() {
+      const startTime = performance.now();
+      const ind = document.getElementById('statusIndicator');
+      const icon = document.getElementById('statusIcon');
+      const mainTxt = document.getElementById('statusMainText');
+      const subTxt = document.getElementById('statusSubText');
+      const latencyEl = document.getElementById('infoLatency');
+
+      try {
+        const res = await fetch(`/status?ip=${encodeURIComponent(currentConfig.printer_ip)}&port=${currentConfig.printer_port}`);
+        const elapsed = Math.round(performance.now() - startTime);
+        latencyEl.textContent = `~${elapsed} ms`;
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.online) {
+            ind.className = 'status-indicator online';
+            icon.innerHTML = svgIconCheck;
+            mainTxt.textContent = `${i18n[currentLang].statusReady} (${data.state || 'Idle'})`;
+            subTxt.textContent = `${i18n[currentLang].statusVerified} (${data.ip}:${data.port})`;
+            addLog(`Ping OK (${data.state}) ~${elapsed}ms`, 'success');
+          } else {
+            ind.className = 'status-indicator offline';
+            icon.innerHTML = svgIconCross;
+            mainTxt.textContent = i18n[currentLang].statusOffline;
+            subTxt.textContent = data.error || i18n[currentLang].statusOfflineSub;
+            addLog(`Offline: ${data.error || 'Timeout'}`, 'warn');
+          }
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      } catch (e) {
+        ind.className = 'status-indicator offline';
+        icon.innerHTML = svgIconCross;
+        mainTxt.textContent = i18n[currentLang].statusConnError;
+        subTxt.textContent = e.message;
+        latencyEl.textContent = '-';
+        addLog(`Check error: ${e.message}`, 'error');
+      }
+    }
+
+    document.getElementById('btnPing').addEventListener('click', checkStatus);
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+      loadConfig();
+      checkStatus();
+    });
+
+    // ─── Source Controls ───
+    const srcPlaten = document.getElementById('srcPlaten');
+    const srcFeeder = document.getElementById('srcFeeder');
+    const duplexCb = document.getElementById('scanDuplex');
+
+    srcPlaten.addEventListener('click', () => {
+      selectedSource = 'Platen';
+      srcPlaten.classList.add('active');
+      srcFeeder.classList.remove('active');
+      duplexCb.disabled = true;
+      duplexCb.checked = false;
+    });
+
+    srcFeeder.addEventListener('click', () => {
+      selectedSource = 'Feeder';
+      srcFeeder.classList.add('active');
+      srcPlaten.classList.remove('active');
+      duplexCb.disabled = false;
+    });
+
+    // ─── Direct Scan ───
+    const btnScan = document.getElementById('btnStartScan');
+    const scanControls = document.getElementById('scanControlsForm');
+    const progressBox = document.getElementById('scanProgressBox');
+    const progressMsg = document.getElementById('scanProgressMsg');
+    const previewBox = document.getElementById('previewBox');
+    const pdfFrame = document.getElementById('pdfFrame');
+
+    btnScan.addEventListener('click', async () => {
+      const resolution = parseInt(document.getElementById('scanResolution').value, 10) || 300;
+      const duplex = duplexCb.checked && selectedSource === 'Feeder';
+
+      scanControls.style.display = 'none';
+      progressBox.style.display = 'flex';
+      previewBox.style.display = 'none';
+      progressMsg.textContent = `${currentLang === 'ka' ? 'მოთხოვნა გადაცემულია სკანერზე' : 'Request sent to printer'} (${currentConfig.printer_ip}). Source: ${selectedSource}, DPI: ${resolution}...`;
+
+      addLog(`Scan started [${selectedSource}, ${duplex ? 'Duplex' : 'Single'}, ${resolution} DPI]`, 'info');
+
+      try {
+        const res = await fetch('/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(currentConfig.api_sec_print ? { 'api_sec_print': currentConfig.api_sec_print } : {})
+          },
+          body: JSON.stringify({
+            ip: currentConfig.printer_ip,
+            port: currentConfig.printer_port,
+            source: selectedSource,
+            duplex: duplex,
+            resolution: resolution,
+            api_sec_print: currentConfig.api_sec_print || null
+          })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || `HTTP ${res.status}`);
+        }
+
+        const blob = await res.blob();
+        currentPdfBlob = blob;
+        const blobUrl = URL.createObjectURL(blob);
+        pdfFrame.src = blobUrl;
+
+        progressBox.style.display = 'none';
+        scanControls.style.display = 'flex';
+        previewBox.style.display = 'flex';
+
+        const sizeKb = (blob.size / 1024).toFixed(1);
+        addLog(`${i18n[currentLang].scanComplete} ${sizeKb} KB`, 'success');
+      } catch (e) {
+        progressBox.style.display = 'none';
+        scanControls.style.display = 'flex';
+        alert(`Error: ${e.message}`);
+        addLog(`Scan error: ${e.message}`, 'error');
+      }
+    });
+
+    // ─── Download PDF ───
+    document.getElementById('btnDownloadPdf').addEventListener('click', () => {
+      if (!currentPdfBlob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(currentPdfBlob);
+      a.download = `scanned_document_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      addLog(i18n[currentLang].docDownloaded, 'info');
+    });
+
+    // ─── Clear Logs ───
+    document.getElementById('btnClearLogs').addEventListener('click', () => {
+      document.getElementById('logStream').innerHTML = '';
+      addLog(i18n[currentLang].logsCleared, 'info');
+    });
+
+    // ─── Author External Link ───
+    const authorLink = document.getElementById('authorLink');
+    if (authorLink) {
+      authorLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        fetch('/open-url?url=' + encodeURIComponent('https://github.com/e404r'));
+      });
+    }
+
+    // ─── Init ───
+    setLanguage(currentLang);
+    addLog(i18n[currentLang].sysReady, 'info');
+    loadConfig().then(() => checkStatus());
+  </script>
+</body>
+</html>

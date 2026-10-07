@@ -1,0 +1,20 @@
+# Rust build artifacts
+/target/
+Cargo.lock.bak
+
+# Packaged distribution binaries & installers (use GitHub Releases)
+/dist/
+
+# Runtime config & local files
+scanner_config.json
+scanned_*.pdf
+
+# Temporary files
+*.b64
+app_icon.jpg
+
+# Operating System files
+.DS_Store
+Thumbs.db
+*.swp
+*~
